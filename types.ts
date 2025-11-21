@@ -332,6 +332,7 @@ export interface AIConfig {
         fileSearch: boolean;
         codeInterpreter: boolean;
     };
+    apiKey?: string; // New: BYOK Support
 }
 
 export interface BusinessProfile {

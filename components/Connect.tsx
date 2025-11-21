@@ -10,7 +10,7 @@ interface ConnectProps {
 }
 
 const Connect: React.FC<ConnectProps> = ({ business, onUpdate }) => {
-    const [activeTab, setActiveTab] = useState<'widget' | 'links' | 'sandbox' | 'senders'>('widget');
+    const [activeTab, setActiveTab] = useState<'widget' | 'links' | 'sandbox' | 'production' | 'senders'>('widget');
     const [copied, setCopied] = useState(false);
     const [sandboxParticipants, setSandboxParticipants] = useState<SandboxParticipant[]>(MOCK_SANDBOX_PARTICIPANTS);
     const [snippetType, setSnippetType] = useState<'text' | 'media'>('text');
@@ -205,6 +205,12 @@ createMessage();`.trim();
                         className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${activeTab === 'sandbox' ? 'bg-green-600 text-white' : 'text-slate-400 hover:text-white'}`}
                     >
                         <span className="mr-2">🧪</span> Sandbox Config
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('production')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium flex items-center transition-colors ${activeTab === 'production' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <span className="mr-2">🚀</span> Production
                     </button>
                     <button
                         onClick={() => setActiveTab('senders')}
@@ -665,6 +671,142 @@ createMessage();`.trim();
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'production' && (
+                <div className="flex flex-1 gap-6 overflow-hidden">
+                    <div className="flex-1 bg-slate-800 rounded-xl border border-slate-700 overflow-y-auto custom-scrollbar p-6">
+                        <h3 className="text-lg font-bold text-white mb-2">Production Configuration</h3>
+                        <p className="text-slate-400 text-sm mb-6 border-b border-slate-700 pb-4">
+                            Connect your live WhatsApp Business Account (WABA). This requires a verified Meta Business Manager.
+                        </p>
+
+                        <div className="space-y-8">
+                            {/* Step 1: Credentials */}
+                            <div className="p-5 bg-[#f0f4f8] text-slate-800 border border-slate-300 rounded-lg shadow-inner">
+                                <h4 className="font-bold text-sm mb-4 text-slate-900 flex items-center">
+                                    <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>
+                                    Twilio Credentials
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Account SID</label>
+                                        <input
+                                            value={business.twilioAccountSid || ''}
+                                            readOnly
+                                            className="w-full bg-white border border-slate-300 rounded p-2 text-slate-600 text-xs font-mono"
+                                            placeholder="Configure in Settings > Integrations"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Auth Token</label>
+                                        <input
+                                            type="password"
+                                            value={business.twilioAuthToken || ''}
+                                            readOnly
+                                            className="w-full bg-white border border-slate-300 rounded p-2 text-slate-600 text-xs font-mono"
+                                            placeholder="Configure in Settings > Integrations"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-500 mt-3">
+                                    Go to <span className="font-bold">Settings &gt; Integrations</span> to update these values.
+                                </p>
+                            </div>
+
+                            {/* Step 2: Webhook Config */}
+                            <div className="p-5 bg-[#f0f4f8] text-slate-800 border border-slate-300 rounded-lg shadow-inner">
+                                <h4 className="font-bold text-sm mb-4 text-slate-900 flex items-center">
+                                    <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>
+                                    Configure Webhooks
+                                </h4>
+                                <p className="text-xs text-slate-600 mb-4">
+                                    In your Twilio Console, go to <strong>Phone Numbers &gt; Manage &gt; Active Numbers</strong>, select your number, and scroll to the <strong>Messaging</strong> section.
+                                </p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">A Message Comes In (Webhook)</label>
+                                        <div className="flex items-center">
+                                            <input
+                                                readOnly
+                                                value={`https://api.chat2close.ai/v1/webhooks/whatsapp/${business.id}/incoming`}
+                                                className="flex-1 bg-white border border-slate-300 rounded-l p-2 text-slate-600 text-xs font-mono"
+                                            />
+                                            <button
+                                                onClick={() => handleCopy(`https://api.chat2close.ai/v1/webhooks/whatsapp/${business.id}/incoming`)}
+                                                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-r border border-l-0 border-slate-300 text-xs font-bold"
+                                            >
+                                                {copied ? 'Copied' : 'Copy'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-600 mb-1">Status Callback URL</label>
+                                        <div className="flex items-center">
+                                            <input
+                                                readOnly
+                                                value={`https://api.chat2close.ai/v1/callbacks/status/${business.id}`}
+                                                className="flex-1 bg-white border border-slate-300 rounded-l p-2 text-slate-600 text-xs font-mono"
+                                            />
+                                            <button
+                                                onClick={() => handleCopy(`https://api.chat2close.ai/v1/callbacks/status/${business.id}`)}
+                                                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-r border border-l-0 border-slate-300 text-xs font-bold"
+                                            >
+                                                {copied ? 'Copied' : 'Copy'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Side: Checklist */}
+                    <div className="w-80 bg-slate-800 rounded-xl border border-slate-700 p-6">
+                        <h3 className="text-white font-bold text-sm mb-4">Go-Live Checklist</h3>
+                        <div className="space-y-3">
+                            <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${business.twilioAccountSid ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                                    {business.twilioAccountSid && <Icons.Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <p className="text-xs text-slate-300">Twilio Account Connected</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${business.metaVerificationStatus === 'verified' ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                                    {business.metaVerificationStatus === 'verified' && <Icons.Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <p className="text-xs text-slate-300">Meta Business Verification</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center ${business.twilioNumber ? 'bg-green-500 border-green-500' : 'border-slate-500'}`}>
+                                    {business.twilioNumber && <Icons.Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <p className="text-xs text-slate-300">Phone Number Registered</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 w-4 h-4 rounded border border-slate-500 flex items-center justify-center">
+                                </div>
+                                <p className="text-xs text-slate-300">Webhooks Configured</p>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <div className="mt-0.5 w-4 h-4 rounded border border-slate-500 flex items-center justify-center">
+                                </div>
+                                <p className="text-xs text-slate-300">Payment Method Added</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                            <h4 className="text-blue-400 font-bold text-xs mb-2">Need Help?</h4>
+                            <p className="text-[10px] text-slate-400 mb-3">
+                                Our support team can help you verify your business and get approved for higher messaging limits.
+                            </p>
+                            <button className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded">
+                                Contact Support
+                            </button>
                         </div>
                     </div>
                 </div>

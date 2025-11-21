@@ -1,13 +1,19 @@
 import { Message, BusinessProfile, CartItem, Customer, Order, Ticket } from "../types";
 
 // Secure API proxy call - API key stays on server
-const callGeminiAPI = async (prompt: string, context?: string, model: string = 'gemini-2.0-flash-exp'): Promise<any> => {
+const callGeminiAPI = async (prompt: string, context?: string, model: string = 'gemini-2.0-flash-exp', apiKey?: string): Promise<any> => {
     try {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (apiKey) {
+            headers['x-gemini-api-key'] = apiKey;
+        }
+
         const response = await fetch('/api/gemini', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({
                 prompt,
                 context,
@@ -92,7 +98,12 @@ export const generateAgentResponse = async (
     const fullPrompt = `${conversationContext}\n\nRespond as the AI agent following the system instructions above.`;
 
     try {
-        const result = await callGeminiAPI(fullPrompt, systemPrompt, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const result = await callGeminiAPI(
+            fullPrompt,
+            systemPrompt,
+            business.aiConfig?.model || 'gemini-2.0-flash-exp',
+            business.aiConfig?.apiKey // Pass custom key if present
+        );
 
         // Extract text from Gemini response
         const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text ||

@@ -6,7 +6,7 @@ const corsHeaders = {
         ? `https://${process.env.VERCEL_URL}`
         : 'http://localhost:3000',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, x-gemini-api-key',
 };
 
 export default async function handler(
@@ -23,8 +23,10 @@ export default async function handler(
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Check if API key is configured
-    if (!process.env.GEMINI_API_KEY) {
+    // Check if API key is configured (either in env or header)
+    const apiKey = req.headers['x-gemini-api-key'] as string || process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
         console.error('GEMINI_API_KEY not configured');
         return res.status(500).json({ error: 'API key not configured' });
     }
@@ -56,7 +58,7 @@ export default async function handler(
 
         // Call Gemini API with server-side key
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: {
