@@ -12,9 +12,11 @@ interface LayoutProps {
     children: React.ReactNode;
     currentView: AppView;
     onNavigate: (view: AppView) => void;
+    onOpenHelp?: () => void;
+    onStartTour?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) => {
+const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOpenHelp, onStartTour }) => {
     const { activeBusiness } = useBusiness();
     const { customers, orders, notifications, setNotifications } = useData();
 
@@ -47,6 +49,8 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
                 onNavigate={onNavigate}
                 isMobileOpen={isMobileMenuOpen}
                 onMobileClose={() => setIsMobileMenuOpen(false)}
+                onOpenHelp={onOpenHelp}
+                onStartTour={onStartTour}
             />
 
             {/* Main Content */}
@@ -86,9 +90,18 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate }) =>
 
                         <div className="h-6 w-px bg-slate-800 mx-2"></div>
 
-                        <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative" title="Help">
-                            <Icons.LifeBuoy className="w-5 h-5" />
-                        </button>
+                        {onOpenHelp && (
+                            <button
+                                onClick={onOpenHelp}
+                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors relative group"
+                                title="Help & Support (Cmd/Ctrl + ?)"
+                            >
+                                <Icons.LifeBuoy className="w-5 h-5" />
+                                <span className="absolute -bottom-8 right-0 bg-slate-800 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                    Help (⌘?)
+                                </span>
+                            </button>
+                        )}
 
                         <NotificationCenter
                             notifications={notifications}

@@ -20,7 +20,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         setTimeout(() => {
             const mockUser: User = {
                 id: email || 'demo_user',
-                email: email || 'demo@twilioflow.ai',
+                email: email || 'demo@chat2close.ai',
                 name: email ? email.split('@')[0] : 'Demo User',
                 role: 'owner',
                 plan: 'trial'
@@ -65,7 +65,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                             ⚡
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-2 text-gradient">TwilioFlow AI</h1>
+                    <h1 className="text-4xl font-bold text-white mb-2 text-gradient">Chat2Close AI</h1>
                     <p className="text-slate-300">Enterprise WhatsApp Automation Platform</p>
                 </div>
 

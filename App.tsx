@@ -62,6 +62,9 @@ import Quotes from './components/Quotes';
 import Contracts from './components/Contracts';
 import GiftCards from './components/GiftCards';
 import Expenses from './components/Expenses';
+import OnboardingTour from './components/OnboardingTour';
+import HelpCenter from './components/HelpCenter';
+import WelcomeScreen from './components/WelcomeScreen';
 
 const AppContent: React.FC = () => {
     console.log('AppContent rendering');
@@ -84,6 +87,32 @@ const AppContent: React.FC = () => {
 
     // Navigation State
     const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
+
+    // Onboarding State
+    const [showWelcome, setShowWelcome] = useState(false);
+    const [showTour, setShowTour] = useState(false);
+    const [showHelp, setShowHelp] = useState(false);
+
+    // Check if user is first-time visitor
+    useEffect(() => {
+        const hasSeenWelcome = localStorage.getItem('shoptet_welcome_seen');
+        if (!hasSeenWelcome && user) {
+            setShowWelcome(true);
+        }
+    }, [user]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Cmd/Ctrl + ? to toggle help
+            if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+                e.preventDefault();
+                setShowHelp(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // URL Routing Sync
     useEffect(() => {
@@ -217,9 +246,42 @@ const AppContent: React.FC = () => {
     };
 
     return (
-        <Layout currentView={currentView} onNavigate={setCurrentView}>
-            {renderView()}
-        </Layout>
+        <>
+            {/* Welcome Screen for First-Time Users */}
+            {showWelcome && (
+                <WelcomeScreen
+                    onStartTour={() => {
+                        setShowWelcome(false);
+                        setShowTour(true);
+                    }}
+                    onCreateBusiness={() => {
+                        setShowWelcome(false);
+                        setCurrentView(AppView.ONBOARDING);
+                    }}
+                    onSkip={() => setShowWelcome(false)}
+                />
+            )}
+
+            {/* Onboarding Tour */}
+            {showTour && (
+                <OnboardingTour
+                    onComplete={() => setShowTour(false)}
+                    onSkip={() => setShowTour(false)}
+                />
+            )}
+
+            {/* Help Center */}
+            {showHelp && <HelpCenter onClose={() => setShowHelp(false)} />}
+
+            <Layout
+                currentView={currentView}
+                onNavigate={setCurrentView}
+                onOpenHelp={() => setShowHelp(true)}
+                onStartTour={() => setShowTour(true)}
+            >
+                {renderView()}
+            </Layout>
+        </>
     );
 };
 

@@ -240,8 +240,8 @@ const ChatSimulator: React.FC<ChatSimulatorProps> = ({ business, onOrderConfirme
     const finalTotal = Math.max(0, subtotal - discount);
 
     // Webhook URLs from Config
-    const webhookUrl = business.sandboxConfig?.incomingUrl || `https://api.twilioflow.ai/v1/webhooks/whatsapp/${business.id}/incoming`;
-    const statusUrl = business.sandboxConfig?.statusCallbackUrl || `https://api.twilioflow.ai/v1/callbacks/status/${business.id}`;
+    const webhookUrl = business.sandboxConfig?.incomingUrl || `https://api.chat2close.ai/v1/webhooks/whatsapp/${business.id}/incoming`;
+    const statusUrl = business.sandboxConfig?.statusCallbackUrl || `https://api.chat2close.ai/v1/callbacks/status/${business.id}`;
 
     // Calculate Session Expiry & Opt-In
     const hasUserReplied = messages.some(m => m.role === 'user');
@@ -1174,8 +1174,8 @@ const ChatSimulator: React.FC<ChatSimulatorProps> = ({ business, onOrderConfirme
                                                 key={opt}
                                                 onClick={() => setCurrentVariantSelection({ ...currentVariantSelection, [variant.name]: opt })}
                                                 className={`px-4 py-2 rounded border text-sm transition-colors ${currentVariantSelection[variant.name] === opt
-                                                        ? 'bg-slate-800 text-white border-slate-800'
-                                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                                    ? 'bg-slate-800 text-white border-slate-800'
+                                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                                                     }`}
                                             >
                                                 {opt}
@@ -1413,8 +1413,8 @@ const ChatSimulator: React.FC<ChatSimulatorProps> = ({ business, onOrderConfirme
                     return (
                         <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-2 duration-300 relative`}>
                             <div className={`max-w-[80%] rounded-lg p-2 px-3 text-sm shadow-sm relative group ${isSms ? 'bg-blue-500 text-white' :
-                                    isFailed ? 'bg-red-100 text-red-900 border border-red-300' :
-                                        isUser ? 'bg-[#d9fdd3] text-black rounded-tr-none' : 'bg-white text-black rounded-tl-none'
+                                isFailed ? 'bg-red-100 text-red-900 border border-red-300' :
+                                    isUser ? 'bg-[#d9fdd3] text-black rounded-tr-none' : 'bg-white text-black rounded-tl-none'
                                 }`}>
                                 {isSms && <div className="text-[10px] font-bold text-blue-100 mb-1">SMS Fallback</div>}
                                 {isFailed && <div className="text-[10px] font-bold text-red-500 mb-1 flex items-center"><span className="mr-1">⚠</span> Not Delivered (Error {msg.errorCode})</div>}

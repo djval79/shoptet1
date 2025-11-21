@@ -10,9 +10,11 @@ interface SidebarProps {
     onNavigate: (view: AppView) => void;
     isMobileOpen: boolean;
     onMobileClose: () => void;
+    onOpenHelp?: () => void;
+    onStartTour?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen, onMobileClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen, onMobileClose, onOpenHelp, onStartTour }) => {
     const { user, agencySettings } = useUser();
     const { businesses, activeBusinessId, setActiveBusinessId } = useBusiness();
     const { tasks, orders, tickets } = useData();
@@ -55,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen
                             <Icons.Zap className="text-white w-5 h-5" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg leading-none text-white tracking-tight">TwilioFlow</h1>
+                            <h1 className="font-bold text-lg leading-none text-white tracking-tight">Chat2Close</h1>
                             <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Enterprise</p>
                         </div>
                     </div>
@@ -161,6 +163,32 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen
                         </div>
                         <div className="text-slate-500 group-hover:text-white transition-colors"><Icons.Settings className="w-4 h-4" /></div>
                     </div>
+
+                    {/* Help & Tour Buttons */}
+                    {(onOpenHelp || onStartTour) && (
+                        <div className="flex gap-2 mt-3">
+                            {onOpenHelp && (
+                                <button
+                                    onClick={onOpenHelp}
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors text-xs font-medium"
+                                    title="Help & Support"
+                                >
+                                    <Icons.LifeBuoy className="w-4 h-4" />
+                                    <span>Help</span>
+                                </button>
+                            )}
+                            {onStartTour && (
+                                <button
+                                    onClick={onStartTour}
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-xs font-medium"
+                                    title="Start Product Tour"
+                                >
+                                    <Icons.Play className="w-4 h-4" />
+                                    <span>Tour</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </>
