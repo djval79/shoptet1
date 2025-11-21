@@ -114,7 +114,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
 
                 {/* View Content */}
                 <div className="flex-1 overflow-hidden relative">
-                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-8">
+                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-4 lg:p-8">
                         {children}
                     </div>
                 </div>

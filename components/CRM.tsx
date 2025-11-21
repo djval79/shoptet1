@@ -449,9 +449,9 @@ const CRM: React.FC<CRMProps> = ({ customers, orders = [], tickets = [], campaig
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wide ${c.status === 'lead' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                        c.status === 'negotiating' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
-                                                            c.status === 'closed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                                                'bg-slate-700/50 text-slate-400 border border-slate-600'
+                                                    c.status === 'negotiating' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' :
+                                                        c.status === 'closed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                                            'bg-slate-700/50 text-slate-400 border border-slate-600'
                                                     }`}>
                                                     {c.status}
                                                 </span>
@@ -589,7 +589,7 @@ const CRM: React.FC<CRMProps> = ({ customers, orders = [], tickets = [], campaig
 
                 {/* Customer Detail Slide-Over */}
                 {selectedCustomer && (
-                    <div className="w-1/3 bg-slate-800 rounded-xl border border-slate-700 shadow-2xl flex flex-col animate-in slide-in-from-right-4 overflow-hidden absolute right-0 top-0 bottom-0 z-30 h-full">
+                    <div className="w-full md:w-1/2 lg:w-1/3 bg-slate-800 rounded-xl border border-slate-700 shadow-2xl flex flex-col animate-in slide-in-from-right-4 overflow-hidden absolute right-0 top-0 bottom-0 z-30 h-full">
                         <div className="p-6 border-b border-slate-700 flex justify-between items-start bg-slate-900/50">
                             <div className="flex items-center space-x-4">
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-2xl text-white font-bold border-4 border-slate-800 shadow-lg">
@@ -635,8 +635,8 @@ const CRM: React.FC<CRMProps> = ({ customers, orders = [], tickets = [], campaig
                                     {getTimeline(selectedCustomer).map((event, idx) => (
                                         <div key={idx} className="relative">
                                             <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-slate-800 ${event.type === 'order' ? 'bg-green-500' :
-                                                    event.type === 'ticket' ? 'bg-yellow-500' :
-                                                        event.type === 'chat' ? 'bg-blue-500' : 'bg-purple-500'
+                                                event.type === 'ticket' ? 'bg-yellow-500' :
+                                                    event.type === 'chat' ? 'bg-blue-500' : 'bg-purple-500'
                                                 }`}></div>
 
                                             <div className="text-xs text-slate-400 mb-1">{new Date(event.timestamp).toLocaleString()}</div>
