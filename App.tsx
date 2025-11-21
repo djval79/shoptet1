@@ -65,6 +65,7 @@ import Expenses from './components/Expenses';
 import OnboardingTour from './components/OnboardingTour';
 import HelpCenter from './components/HelpCenter';
 import WelcomeScreen from './components/WelcomeScreen';
+import TermsModal from './components/TermsModal';
 
 const AppContent: React.FC = () => {
     console.log('AppContent rendering');
@@ -92,12 +93,21 @@ const AppContent: React.FC = () => {
     const [showWelcome, setShowWelcome] = useState(false);
     const [showTour, setShowTour] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+    const [showTerms, setShowTerms] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
 
     // Check if user is first-time visitor
     useEffect(() => {
         const hasSeenWelcome = localStorage.getItem('shoptet_welcome_seen');
-        if (!hasSeenWelcome && user) {
-            setShowWelcome(true);
+        const hasAcceptedTerms = localStorage.getItem('chat2close_terms_accepted');
+
+        if (!hasAcceptedTerms && user) {
+            setShowTerms(true);
+        } else {
+            setTermsAccepted(true);
+            if (!hasSeenWelcome && user) {
+                setShowWelcome(true);
+            }
         }
     }, [user]);
 
@@ -180,6 +190,23 @@ const AppContent: React.FC = () => {
         addBusiness(newBusiness);
         setCurrentView(AppView.DASHBOARD);
         addNotification('Business Created', `${newBusiness.name} is now active.`, 'success');
+    };
+
+    const handleAcceptTerms = () => {
+        localStorage.setItem('chat2close_terms_accepted', 'true');
+        setTermsAccepted(true);
+        setShowTerms(false);
+
+        // Show welcome screen after accepting terms
+        const hasSeenWelcome = localStorage.getItem('shoptet_welcome_seen');
+        if (!hasSeenWelcome) {
+            setShowWelcome(true);
+        }
+    };
+
+    const handleDeclineTerms = () => {
+        // Redirect away or logout
+        logout();
     };
 
     if (!user) {
@@ -267,6 +294,14 @@ const AppContent: React.FC = () => {
                 <OnboardingTour
                     onComplete={() => setShowTour(false)}
                     onSkip={() => setShowTour(false)}
+                />
+            )}
+
+            {/* Terms Modal */}
+            {showTerms && (
+                <TermsModal
+                    onAccept={handleAcceptTerms}
+                    onDecline={handleDeclineTerms}
                 />
             )}
 

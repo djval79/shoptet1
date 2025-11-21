@@ -1,7 +1,32 @@
-import { GoogleGenAI } from "@google/genai";
-import { Message, BusinessProfile, CartItem, Customer, Order, Ticket, Task, Campaign, Appointment, MessageLog, WebhookEventLog } from "../types";
+import { Message, BusinessProfile, CartItem, Customer, Order, Ticket } from "../types";
 
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' }) as any;
+// Secure API proxy call - API key stays on server
+const callGeminiAPI = async (prompt: string, context?: string, model: string = 'gemini-2.0-flash-exp'): Promise<any> => {
+    try {
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt,
+                context,
+                model
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API proxy error:', errorData);
+            throw new Error(errorData.error || 'API request failed');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Gemini API call failed:', error);
+        throw error;
+    }
+};
 
 // --- Helper: Safe JSON Parsing ---
 const safeParseJSON = <T>(text: string, fallback: T): T => {
@@ -35,56 +60,6 @@ export const generateAgentResponse = async (
     product?: any;
     flowId?: string;
 }> => {
-    const ai = getAI();
-
-    // Define Tools
-    const tools = [
-        {
-            functionDeclarations: [
-                {
-                    name: "checkInventory",
-                    description: "Check if a product is in stock and get its price.",
-                    parameters: {
-                        type: "OBJECT",
-                        properties: {
-                            productName: { type: "STRING", description: "The name of the product to check." }
-                        },
-                        required: ["productName"]
-                    }
-                },
-                {
-                    name: "addToCart",
-                    description: "Add a product to the customer's shopping cart.",
-                    parameters: {
-                        type: "OBJECT",
-                        properties: {
-                            productName: { type: "STRING", description: "The name of the product." },
-                            quantity: { type: "NUMBER", description: "The quantity to add." }
-                        },
-                        required: ["productName", "quantity"]
-                    }
-                },
-                {
-                    name: "bookAppointment",
-                    description: "Book a consultation or appointment for the customer.",
-                    parameters: {
-                        type: "OBJECT",
-                        properties: {
-                            date: { type: "STRING", description: "The date and time for the appointment (ISO string or description)." },
-                            type: { type: "STRING", description: "The type of appointment (e.g., consultation, demo)." }
-                        },
-                        required: ["date", "type"]
-                    }
-                }
-            ]
-        }
-    ];
-
-    const model = ai.getGenerativeModel({
-        model: business.aiConfig?.model || "gemini-2.0-flash",
-        tools: tools
-    });
-
     const systemPrompt = `
     You are an AI sales agent for ${business.name}.
     Your goal is to sell products and provide support.
@@ -102,45 +77,29 @@ export const generateAgentResponse = async (
     ${business.aiConfig?.systemPrompt || ""}
     
     IMPORTANT:
-    - If the user asks about stock or price, USE the "checkInventory" tool.
-    - If the user wants to buy something, USE the "addToCart" tool.
-    - If the user wants to meet, USE the "bookAppointment" tool.
-    - Otherwise, just reply with text.
+    - If the user asks about stock or price, provide product information.
+    - If the user wants to buy something, help them add to cart.
+    - If the user wants to meet, help them book an appointment.
+    - Be helpful, friendly, and professional.
     
     Response Format:
     Return a JSON object with:
-    - text: The message to the user (if not calling a tool).
+    - text: The message to the user.
     - suggestedActions: Array of quick replies (optional).
   `;
 
+    const conversationContext = history.map(m => `${m.role}: ${m.text}`).join('\n');
+    const fullPrompt = `${conversationContext}\n\nRespond as the AI agent following the system instructions above.`;
+
     try {
-        const chat = model.startChat({
-            history: history.map(m => ({
-                role: m.role === 'user' ? 'user' : 'model',
-                parts: [{ text: m.text }]
-            })),
-            generationConfig: {
-                responseMimeType: "application/json",
-                temperature: business.aiConfig?.temperature || 0.7,
-            }
-        });
+        const result = await callGeminiAPI(fullPrompt, systemPrompt, business.aiConfig?.model || 'gemini-2.0-flash-exp');
 
-        const result = await chat.sendMessage(systemPrompt);
-        const response = result.response;
+        // Extract text from Gemini response
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text ||
+            result.text ||
+            "I'm having trouble connecting right now.";
 
-        // Check for native function calls
-        const functionCalls = response.functionCalls ? response.functionCalls() : [];
-        if (functionCalls && functionCalls.length > 0) {
-            const call = functionCalls[0];
-            return {
-                text: "One moment, checking that for you...",
-                functionCall: { name: call.name, args: call.args }
-            };
-        }
-
-        // Otherwise parse the JSON text
-        const text = response.text();
-        const parsed = safeParseJSON(text, { text: "I'm having trouble connecting right now." });
+        const parsed = safeParseJSON(responseText, { text: responseText });
         return parsed;
 
     } catch (error) {
@@ -156,9 +115,6 @@ export const generateOnboardingDetails = async (websiteUrl: string): Promise<{
     description: string;
     products: { name: string; price: number; description: string }[];
 }> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     const prompt = `
     Analyze the business at ${websiteUrl} (simulate visiting it).
     Extract:
@@ -166,15 +122,13 @@ export const generateOnboardingDetails = async (websiteUrl: string): Promise<{
     2. Short Description
     3. 3 Representative Products (Name, Price, Description)
     
-    Return JSON.
+    Return JSON with: { name, description, products: [{name, price, description}] }
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), { name: "", description: "", products: [] });
+        const result = await callGeminiAPI(prompt);
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, { name: "", description: "", products: [] });
     } catch (error) {
         return { name: "My Business", description: "A great business", products: [] };
     }
@@ -189,9 +143,6 @@ export const generateMarketingCopy = async (
     body: string;
     sms: string;
 }> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: business.aiConfig?.model || "gemini-2.0-flash" });
-
     const prompt = `
     Write marketing copy for ${business.name}.
     Type: ${campaignType}
@@ -204,11 +155,9 @@ export const generateMarketingCopy = async (
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), { subject: "", body: "", sms: "" });
+        const result = await callGeminiAPI(prompt, undefined, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, { subject: "", body: "", sms: "" });
     } catch (error) {
         return { subject: "Update", body: "Check out our latest products!", sms: "Check out our latest products!" };
     }
@@ -223,9 +172,6 @@ export const analyzeLead = async (
     tags: string[];
     nextSteps: string;
 }> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     const prompt = `
     Analyze this conversation for ${business.name}.
     History: ${JSON.stringify(history)}
@@ -238,11 +184,9 @@ export const analyzeLead = async (
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), { score: 0, summary: "No data", tags: [], nextSteps: "None" });
+        const result = await callGeminiAPI(prompt);
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, { score: 0, summary: "No data", tags: [], nextSteps: "None" });
     } catch (error) {
         return { score: 0, summary: "Error analyzing", tags: [], nextSteps: "None" };
     }
@@ -266,9 +210,6 @@ export const generateReviewReply = async (review: any, business: BusinessProfile
 
 export const simulateExperimentResult = async (exp: any, business: BusinessProfile): Promise<any> => {
     // Simulate experiment results using AI
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: business.aiConfig?.model || "gemini-2.0-flash" });
-
     const prompt = `
     Predict A/B test results for ${business.name}.
     Variable: ${exp.variable}
@@ -285,11 +226,9 @@ export const simulateExperimentResult = async (exp: any, business: BusinessProfi
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), {
+        const result = await callGeminiAPI(prompt, undefined, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, {
             a: { sessions: 1000, conversions: 120, revenue: 2400 },
             b: { sessions: 1000, conversions: 150, revenue: 3000 },
             winner: 'b',
@@ -311,9 +250,6 @@ export const generateSmartTasks = async (
     orders: Order[],
     business: BusinessProfile
 ): Promise<{ tasks: any[] }> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: business.aiConfig?.model || "gemini-2.0-flash" });
-
     const prompt = `
     Analyze these customers and orders for ${business.name}.
     Identify 3-5 high-priority sales tasks for today.
@@ -329,11 +265,9 @@ export const generateSmartTasks = async (
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), { tasks: [] });
+        const result = await callGeminiAPI(prompt, undefined, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, { tasks: [] });
     } catch (error) {
         console.error("AI Task Gen Error:", error);
         return { tasks: [] };
@@ -353,9 +287,6 @@ export const generateBusinessImage = async (prompt: string): Promise<string> => 
 };
 
 export const generateAutomationWorkflow = async (prompt: string, business: BusinessProfile): Promise<{ steps: any[] }> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: business.aiConfig?.model || "gemini-2.0-flash" });
-
     const aiPrompt = `
     Create a marketing automation workflow for ${business.name}.
     Goal: ${prompt}
@@ -366,11 +297,9 @@ export const generateAutomationWorkflow = async (prompt: string, business: Busin
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: aiPrompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-        });
-        return safeParseJSON(result.response.text(), { steps: [] });
+        const result = await callGeminiAPI(aiPrompt, undefined, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        return safeParseJSON(responseText, { steps: [] });
     } catch (error) {
         console.error("Workflow Gen Error:", error);
         return { steps: [] };
@@ -378,9 +307,6 @@ export const generateAutomationWorkflow = async (prompt: string, business: Busin
 };
 
 export const generateWidgetGreeting = async (business: BusinessProfile): Promise<string> => {
-    const ai = getAI();
-    const model = ai.getGenerativeModel({ model: business.aiConfig?.model || "gemini-2.0-flash" });
-
     const prompt = `
     Write a short, welcoming greeting for a website chat widget for ${business.name}.
     Tone: Friendly and helpful.
@@ -388,10 +314,9 @@ export const generateWidgetGreeting = async (business: BusinessProfile): Promise
   `;
 
     try {
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: prompt }] }]
-        });
-        return result.response.text().trim();
+        const result = await callGeminiAPI(prompt, undefined, business.aiConfig?.model || 'gemini-2.0-flash-exp');
+        const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text || "Hi! How can we help you today?";
+        return responseText.trim();
     } catch (error) {
         return "Hi! How can we help you today?";
     }
