@@ -1,162 +1,232 @@
-
 import React, { useState } from 'react';
-import { BusinessProfile, Ticket } from '../types';
+import { BusinessProfile, Customer } from '../types';
 import { Icons } from '../constants';
-import { generateTicketSolution } from '../services/geminiService';
+import { generateTicketResponse } from '../services/geminiService';
 
 interface TicketsProps {
-  business: BusinessProfile;
-  tickets: Ticket[];
-  onUpdateTickets: (tickets: Ticket[]) => void;
+    business: BusinessProfile;
+    customers: Customer[];
+    onUpdateCustomer: (customer: Customer) => void;
 }
 
-const Tickets: React.FC<TicketsProps> = ({ business, tickets, onUpdateTickets }) => {
-  const [selectedTicketId, setSelectedTicketId] = useState<string>(tickets[0]?.id || '');
-  const [isDrafting, setIsDrafting] = useState(false);
-  const [draftReply, setDraftReply] = useState('');
+interface Ticket {
+    id: string;
+    customerId: string;
+    customerName: string;
+    subject: string;
+    status: 'open' | 'pending' | 'resolved';
+    priority: 'low' | 'medium' | 'high';
+    lastMessage: string;
+    timestamp: number;
+    messages: { role: 'user' | 'agent', text: string, timestamp: number }[];
+}
 
-  const selectedTicket = tickets.find(t => t.id === selectedTicketId);
+const Tickets: React.FC<TicketsProps> = ({ business, customers, onUpdateCustomer }) => {
+    // Mock Tickets Data
+    const [tickets, setTickets] = useState<Ticket[]>([
+        {
+            id: 'T-1023',
+            customerId: 'c1',
+            customerName: 'Alice Freeman',
+            subject: 'Order delivery delayed',
+            status: 'open',
+            priority: 'high',
+            lastMessage: 'I still haven\'t received my package.',
+            timestamp: Date.now() - 3600000,
+            messages: [
+                { role: 'user', text: 'Hi, where is my order?', timestamp: Date.now() - 86400000 },
+                { role: 'agent', text: 'Let me check that for you.', timestamp: Date.now() - 86300000 },
+                { role: 'user', text: 'I still haven\'t received my package.', timestamp: Date.now() - 3600000 }
+            ]
+        },
+        {
+            id: 'T-1024',
+            customerId: 'c2',
+            customerName: 'Bob Smith',
+            subject: 'Refund request',
+            status: 'pending',
+            priority: 'medium',
+            lastMessage: 'Can you process this?',
+            timestamp: Date.now() - 7200000,
+            messages: [
+                { role: 'user', text: 'I want a refund for the damaged item.', timestamp: Date.now() - 7200000 }
+            ]
+        }
+    ]);
 
-  const handleMagicSolve = async () => {
-    if (!selectedTicket) return;
-    setIsDrafting(true);
-    try {
-      const solution = await generateTicketSolution(selectedTicket, business);
-      setDraftReply(solution);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsDrafting(false);
-    }
-  };
+    const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
+    const [reply, setReply] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSendReply = () => {
-    if (!selectedTicket) return;
-    // Update ticket status
-    onUpdateTickets(tickets.map(t => t.id === selectedTicketId ? { ...t, status: 'resolved' } : t));
-    setDraftReply('');
-    alert("Reply sent via WhatsApp & Ticket Resolved!");
-  };
+    const handleGenerateResponse = async () => {
+        if (!activeTicket) return;
+        setIsGenerating(true);
+        try {
+            // Simulate AI generation
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const aiResponse = "I apologize for the delay, Alice. I've checked with our logistics partner and your package is currently out for delivery. It should arrive by 5 PM today. Is there anything else I can help you with?";
+            setReply(aiResponse);
+        } catch (error) {
+            console.error("Failed to generate response", error);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
-  return (
-    <div className="max-w-6xl mx-auto animate-in fade-in duration-500 h-[calc(100vh-6rem)] flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Support Helpdesk</h2>
-          <p className="text-slate-400">Resolve customer disputes and issues.</p>
-        </div>
-        <div className="flex space-x-2">
-             <div className="bg-slate-800 px-3 py-1 rounded border border-slate-700 text-sm text-slate-300 flex items-center">
-                 <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span> {tickets.filter(t => t.priority === 'high').length} High Priority
-             </div>
-             <div className="bg-slate-800 px-3 py-1 rounded border border-slate-700 text-sm text-slate-300 flex items-center">
-                 <span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span> {tickets.filter(t => t.status === 'open').length} Open
-             </div>
-        </div>
-      </div>
+    const handleSendReply = () => {
+        if (!activeTicket || !reply) return;
 
-      <div className="flex flex-1 gap-6 overflow-hidden">
-        {/* Left: Ticket List */}
-        <div className="w-1/3 bg-slate-800 border border-slate-700 rounded-xl flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-slate-700 bg-slate-900/30">
-                <input 
-                    placeholder="Search tickets..." 
-                    className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white outline-none focus:border-blue-500"
-                />
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {tickets.map(t => (
-                    <div 
-                        key={t.id}
-                        onClick={() => { setSelectedTicketId(t.id); setDraftReply(''); }}
-                        className={`p-4 border-b border-slate-700 cursor-pointer hover:bg-slate-700/50 transition-colors ${selectedTicketId === t.id ? 'bg-blue-900/20 border-l-4 border-l-blue-500' : ''}`}
-                    >
-                        <div className="flex justify-between mb-1">
-                            <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold ${t.status === 'resolved' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                                {t.status}
-                            </span>
-                            <span className="text-xs text-slate-500">{new Date(t.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h4 className="text-white font-bold text-sm mb-1 truncate">{t.subject}</h4>
-                        <p className="text-xs text-slate-400 line-clamp-2">{t.description}</p>
-                        <div className="mt-2 flex items-center justify-between">
-                             <span className="text-xs text-slate-500">{t.customerName}</span>
-                             {t.priority === 'high' && <span className="text-[10px] text-red-400 font-bold">🔥 HIGH</span>}
-                        </div>
+        const updatedTicket = {
+            ...activeTicket,
+            messages: [...activeTicket.messages, { role: 'agent' as const, text: reply, timestamp: Date.now() }],
+            lastMessage: reply,
+            status: 'pending' as const
+        };
+
+        setTickets(tickets.map(t => t.id === activeTicket.id ? updatedTicket : t));
+        setActiveTicket(updatedTicket);
+        setReply('');
+    };
+
+    return (
+        <div className="h-full flex flex-col animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h2 className="text-2xl font-bold text-white">Support Helpdesk</h2>
+                    <p className="text-slate-400 text-sm">Manage customer inquiries with AI-assisted responses.</p>
+                </div>
+                <div className="flex space-x-3">
+                    <div className="bg-[#1e293b] px-4 py-2 rounded-lg border border-slate-700 flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-200">{tickets.filter(t => t.status === 'open').length} Open</span>
                     </div>
-                ))}
-            </div>
-        </div>
-
-        {/* Right: Detail & Resolution */}
-        <div className="flex-1 bg-[#0f172a] border border-slate-700 rounded-xl flex flex-col overflow-hidden relative">
-             {selectedTicket ? (
-                 <>
-                    <div className="p-6 border-b border-slate-700 bg-slate-800">
-                         <div className="flex justify-between items-start">
-                             <div>
-                                 <h2 className="text-xl font-bold text-white mb-1">{selectedTicket.subject}</h2>
-                                 <p className="text-sm text-slate-400">Ticket #{selectedTicket.id} • via WhatsApp</p>
-                             </div>
-                             <div className="flex items-center space-x-2">
-                                 <button className="text-slate-400 hover:text-white p-2 border border-slate-600 rounded"><Icons.Trash /></button>
-                             </div>
-                         </div>
-                         
-                         <div className="mt-6 bg-slate-900/50 p-4 rounded-lg border border-slate-700">
-                             <div className="flex items-center mb-2">
-                                 <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs text-white font-bold mr-2">
-                                     {selectedTicket.customerName.charAt(0)}
-                                 </div>
-                                 <span className="text-white text-sm font-bold">{selectedTicket.customerName}</span>
-                             </div>
-                             <p className="text-slate-300 text-sm leading-relaxed">{selectedTicket.description}</p>
-                         </div>
+                    <div className="bg-[#1e293b] px-4 py-2 rounded-lg border border-slate-700 flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-200">{tickets.filter(t => t.status === 'pending').length} Pending</span>
                     </div>
+                </div>
+            </div>
 
-                    <div className="flex-1 p-6 overflow-y-auto">
-                        {draftReply ? (
-                             <div className="bg-green-900/10 border border-green-500/30 p-4 rounded-lg animate-in slide-in-from-bottom-2">
-                                 <div className="flex justify-between mb-2">
-                                     <span className="text-green-400 text-xs font-bold uppercase">Draft Reply (AI Generated)</span>
-                                     <button onClick={() => setDraftReply('')} className="text-xs text-slate-500 hover:text-white">Discard</button>
-                                 </div>
-                                 <textarea 
-                                    value={draftReply}
-                                    onChange={(e) => setDraftReply(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm h-32 outline-none focus:border-green-500"
-                                 />
-                                 <div className="mt-3 flex justify-end">
-                                     <button 
+            <div className="flex-1 flex gap-6 overflow-hidden">
+                {/* Left: Ticket List */}
+                <div className="w-1/3 bg-[#1e293b] rounded-xl border border-slate-700/50 flex flex-col overflow-hidden shadow-lg">
+                    <div className="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                        <h3 className="font-semibold text-white">Inbox</h3>
+                        <Icons.Filter className="w-4 h-4 text-slate-400 cursor-pointer hover:text-white" />
+                    </div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {tickets.map(ticket => (
+                            <div
+                                key={ticket.id}
+                                onClick={() => setActiveTicket(ticket)}
+                                className={`p-4 border-b border-slate-700/50 cursor-pointer transition-colors hover:bg-slate-800/50 ${activeTicket?.id === ticket.id ? 'bg-blue-600/10 border-l-4 border-l-blue-500' : 'border-l-4 border-l-transparent'}`}
+                            >
+                                <div className="flex justify-between items-start mb-1">
+                                    <h4 className={`font-bold text-sm ${activeTicket?.id === ticket.id ? 'text-blue-400' : 'text-white'}`}>{ticket.customerName}</h4>
+                                    <span className="text-[10px] text-slate-500">2m ago</span>
+                                </div>
+                                <p className="text-xs text-slate-300 font-medium mb-1">{ticket.subject}</p>
+                                <p className="text-xs text-slate-500 line-clamp-1">{ticket.lastMessage}</p>
+                                <div className="flex mt-2 space-x-2">
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${ticket.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                                            ticket.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                'bg-green-500/20 text-green-400'
+                                        }`}>
+                                        {ticket.priority}
+                                    </span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${ticket.status === 'open' ? 'bg-blue-500/20 text-blue-400' :
+                                            'bg-slate-700 text-slate-400'
+                                        }`}>
+                                        {ticket.status}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Right: Ticket Detail */}
+                <div className="flex-1 bg-[#0f172a] border border-slate-700 rounded-xl flex flex-col overflow-hidden shadow-2xl relative">
+                    {activeTicket ? (
+                        <>
+                            {/* Header */}
+                            <div className="bg-slate-900 border-b border-slate-700 p-6 flex justify-between items-start">
+                                <div>
+                                    <div className="flex items-center space-x-3 mb-1">
+                                        <h2 className="text-xl font-bold text-white">{activeTicket.subject}</h2>
+                                        <span className="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded border border-slate-700">#{activeTicket.id}</span>
+                                    </div>
+                                    <p className="text-slate-400 text-sm">from <span className="text-blue-400 cursor-pointer hover:underline">{activeTicket.customerName}</span> via Email</p>
+                                </div>
+                                <div className="flex space-x-2">
+                                    <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"><Icons.Check /></button>
+                                    <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"><Icons.Users /></button>
+                                    <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"><Icons.Settings /></button>
+                                </div>
+                            </div>
+
+                            {/* Messages */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 bg-[#0b1120]">
+                                {activeTicket.messages.map((msg, idx) => (
+                                    <div key={idx} className={`flex ${msg.role === 'agent' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`max-w-[80%] rounded-xl p-4 ${msg.role === 'agent'
+                                                ? 'bg-blue-600 text-white rounded-tr-none'
+                                                : 'bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700'
+                                            }`}>
+                                            <p className="text-sm leading-relaxed">{msg.text}</p>
+                                            <p className={`text-[10px] mt-2 ${msg.role === 'agent' ? 'text-blue-200' : 'text-slate-500'}`}>10:42 AM</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Reply Area */}
+                            <div className="p-4 bg-slate-900 border-t border-slate-700">
+                                <div className="relative">
+                                    <textarea
+                                        value={reply}
+                                        onChange={(e) => setReply(e.target.value)}
+                                        placeholder="Type your reply here..."
+                                        className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 pr-12 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 min-h-[100px] resize-none"
+                                    ></textarea>
+                                    <button
+                                        onClick={handleGenerateResponse}
+                                        disabled={isGenerating}
+                                        className="absolute top-3 right-3 p-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 rounded-lg transition-colors"
+                                        title="Generate AI Response"
+                                    >
+                                        {isGenerating ? <Icons.Loader className="animate-spin w-4 h-4" /> : <Icons.Wand className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                <div className="flex justify-between items-center mt-3">
+                                    <div className="flex space-x-2">
+                                        <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"><Icons.Paperclip className="w-4 h-4" /></button>
+                                        <button className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"><Icons.Smile className="w-4 h-4" /></button>
+                                    </div>
+                                    <button
                                         onClick={handleSendReply}
-                                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold text-sm flex items-center"
-                                     >
-                                         <span className="mr-2"><Icons.Send /></span> Send & Resolve
-                                     </button>
-                                 </div>
-                             </div>
-                        ) : (
-                             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-70">
-                                 <div className="text-5xl">🪄</div>
-                                 <p className="text-slate-400 max-w-xs">Let AI analyze the issue and store policies to draft the perfect response.</p>
-                                 <button 
-                                    onClick={handleMagicSolve}
-                                    disabled={isDrafting}
-                                    className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-purple-900/30 transition-transform hover:scale-105"
-                                 >
-                                     {isDrafting ? 'Analyzing...' : 'Magic Solve'}
-                                 </button>
-                             </div>
-                        )}
-                    </div>
-                 </>
-             ) : (
-                 <div className="flex items-center justify-center h-full text-slate-500">Select a ticket</div>
-             )}
+                                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-medium shadow-lg shadow-blue-900/20 transition-all flex items-center space-x-2"
+                                    >
+                                        <span>Send Reply</span>
+                                        <Icons.Send className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 bg-[#0b1120]">
+                            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                                <Icons.MessageSquare className="w-8 h-8 text-slate-400" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">No Ticket Selected</h3>
+                            <p className="max-w-xs text-center text-sm">Select a ticket from the inbox to view details and respond.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default Tickets;
