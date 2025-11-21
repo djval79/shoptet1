@@ -1,0 +1,7 @@
+{
+  "name": "Shoptet",
+  "description": "A comprehensive SaaS platform for automating WhatsApp Business sales funnels using Gemini AI and Twilio integration logic. Features simulated sandbox testing, multi-tenant business onboarding, and real-time sales agents.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
