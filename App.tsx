@@ -66,6 +66,7 @@ import OnboardingTour from './components/OnboardingTour';
 import HelpCenter from './components/HelpCenter';
 import WelcomeScreen from './components/WelcomeScreen';
 import TermsModal from './components/TermsModal';
+import BusinessModal from './components/BusinessModal';
 import { Analytics } from "@vercel/analytics/react";
 
 const AppContent: React.FC = () => {
@@ -95,6 +96,7 @@ const AppContent: React.FC = () => {
     const [showTour, setShowTour] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [showTerms, setShowTerms] = useState(false);
+    const [showBusinessModal, setShowBusinessModal] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
 
     // Check if user is first-time visitor
@@ -189,9 +191,20 @@ const AppContent: React.FC = () => {
 
     const handleAddBusiness = (newBusiness: any) => {
         addBusiness(newBusiness);
+        setShowBusinessModal(false);
         setCurrentView(AppView.DASHBOARD);
         addNotification('Business Created', `${newBusiness.name} is now active.`, 'success');
     };
+
+    // Watch for "new" business selection
+    useEffect(() => {
+        if (activeBusinessId === 'new') {
+            setShowBusinessModal(true);
+            // Revert to previous business ID to avoid "undefined" state in background
+            // We can just let it stay "new" if we handle the undefined activeBusiness gracefully,
+            // but BusinessContext defaults to businesses[0], so it's fine.
+        }
+    }, [activeBusinessId]);
 
     const handleAcceptTerms = () => {
         localStorage.setItem('chat2close_terms_accepted', 'true');
@@ -303,6 +316,20 @@ const AppContent: React.FC = () => {
                 <TermsModal
                     onAccept={handleAcceptTerms}
                     onDecline={handleDeclineTerms}
+                />
+            )}
+
+            {/* Business Creation Modal */}
+            {showBusinessModal && (
+                <BusinessModal
+                    onClose={() => {
+                        setShowBusinessModal(false);
+                        // If cancelled, ensure we are on a valid business ID
+                        if (activeBusinessId === 'new') {
+                            setActiveBusinessId(businesses[0].id);
+                        }
+                    }}
+                    onCreate={handleAddBusiness}
                 />
             )}
 
