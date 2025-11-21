@@ -66,6 +66,7 @@ import OnboardingTour from './components/OnboardingTour';
 import HelpCenter from './components/HelpCenter';
 import WelcomeScreen from './components/WelcomeScreen';
 import TermsModal from './components/TermsModal';
+import { Analytics } from "@vercel/analytics/react";
 
 const AppContent: React.FC = () => {
     console.log('AppContent rendering');
@@ -326,6 +327,7 @@ const App: React.FC = () => {
             <BusinessProvider>
                 <DataProvider>
                     <AppContent />
+                    <Analytics />
                 </DataProvider>
             </BusinessProvider>
         </UserProvider>
