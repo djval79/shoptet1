@@ -308,6 +308,7 @@ const Settings: React.FC<SettingsProps> = ({ business, onUpdate }) => {
                                         <option value="Portuguese">Portuguese</option>
                                         <option value="French">French</option>
                                         <option value="German">German</option>
+                                        <option value="Shona">Shona</option>
                                     </select>
                                 </div>
                                 <div>

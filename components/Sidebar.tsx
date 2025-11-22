@@ -14,31 +14,41 @@ interface SidebarProps {
     onStartTour?: () => void;
 }
 
+interface NavItemProps {
+    view: AppView;
+    icon: React.ReactNode;
+    label: string;
+    badge?: number;
+    currentView: AppView;
+    onNavigate: (view: AppView) => void;
+    onMobileClose: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({ view, icon, label, badge, currentView, onNavigate, onMobileClose }) => (
+    <button
+        onClick={() => { onNavigate(view); onMobileClose(); }}
+        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group mb-0.5 ${currentView === view
+            ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
+            : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+            }`}
+    >
+        <span className={`text-lg ${currentView === view ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>{icon}</span>
+        <span className="text-sm font-medium flex-1 text-left">{label}</span>
+        {badge ? <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{badge}</span> : null}
+    </button>
+);
+
+const NavCategory = ({ title, children }: { title: string, children?: React.ReactNode }) => (
+    <div className="mb-4">
+        <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">{title}</div>
+        <div className="space-y-0.5">{children}</div>
+    </div>
+);
+
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen, onMobileClose, onOpenHelp, onStartTour }) => {
     const { user, agencySettings } = useUser();
     const { businesses, activeBusinessId, setActiveBusinessId } = useBusiness();
     const { tasks, orders, tickets } = useData();
-
-    const NavItem = ({ view, icon, label, badge }: { view: AppView, icon: React.ReactNode, label: string, badge?: number }) => (
-        <button
-            onClick={() => { onNavigate(view); onMobileClose(); }}
-            className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group mb-0.5 ${currentView === view
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
-                }`}
-        >
-            <span className={`text-lg ${currentView === view ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>{icon}</span>
-            <span className="text-sm font-medium flex-1 text-left">{label}</span>
-            {badge ? <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{badge}</span> : null}
-        </button>
-    );
-
-    const NavCategory = ({ title, children }: { title: string, children?: React.ReactNode }) => (
-        <div className="mb-4">
-            <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-600">{title}</div>
-            <div className="space-y-0.5">{children}</div>
-        </div>
-    );
 
     return (
         <>
@@ -83,68 +93,68 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isMobileOpen
                 {/* Navigation */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 custom-scrollbar space-y-6">
                     <NavCategory title="Command Center">
-                        <NavItem view={AppView.DASHBOARD} icon={<Icons.TrendingUp />} label="Dashboard" />
-                        <NavItem view={AppView.INBOX} icon={<Icons.Inbox />} label="Unified Inbox" badge={5} />
-                        <NavItem view={AppView.TASKS} icon={<Icons.List />} label="Tasks" badge={tasks.filter(t => t.status === 'todo').length} />
-                        <NavItem view={AppView.CALENDAR} icon={<Icons.Calendar />} label="Calendar" />
+                        <NavItem view={AppView.DASHBOARD} icon={<Icons.TrendingUp />} label="Dashboard" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.INBOX} icon={<Icons.Inbox />} label="Unified Inbox" badge={5} currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.TASKS} icon={<Icons.List />} label="Tasks" badge={tasks.filter(t => t.status === 'todo').length} currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.CALENDAR} icon={<Icons.Calendar />} label="Calendar" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
                     </NavCategory>
 
                     <NavCategory title="Sales & CRM">
-                        <NavItem view={AppView.CRM} icon={<Icons.Users />} label="CRM & Leads" />
-                        <NavItem view={AppView.ORDERS} icon={<Icons.Package />} label="Orders" badge={orders.filter(o => o.status === 'new').length} />
-                        <NavItem view={AppView.POS} icon={<Icons.CreditCard />} label="Point of Sale" />
-                        <NavItem view={AppView.QUOTES} icon={<Icons.FileText />} label="Quotes" />
-                        <NavItem view={AppView.CONTRACTS} icon={<Icons.FileText />} label="Contracts" />
-                        <NavItem view={AppView.INVOICES} icon={<Icons.FileText />} label="Invoices" />
-                        <NavItem view={AppView.SUBSCRIPTIONS} icon={<Icons.Activity />} label="Subscriptions" />
+                        <NavItem view={AppView.CRM} icon={<Icons.Users />} label="CRM & Leads" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.ORDERS} icon={<Icons.Package />} label="Orders" badge={orders.filter(o => o.status === 'new').length} currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.POS} icon={<Icons.CreditCard />} label="Point of Sale" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.QUOTES} icon={<Icons.FileText />} label="Quotes" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.CONTRACTS} icon={<Icons.FileText />} label="Contracts" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.INVOICES} icon={<Icons.FileText />} label="Invoices" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.SUBSCRIPTIONS} icon={<Icons.Activity />} label="Subscriptions" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
                     </NavCategory>
 
                     <NavCategory title="Growth & Marketing">
-                        <NavItem view={AppView.CAMPAIGNS} icon={<Icons.MegaphoneSolid />} label="Broadcasts" />
-                        <NavItem view={AppView.AUTOMATIONS} icon={<Icons.Workflow />} label="Automations" />
-                        <NavItem view={AppView.ADS} icon={<Icons.Target />} label="Ads Manager" />
-                        <NavItem view={AppView.SOCIAL} icon={<Icons.Share />} label="Social Planner" />
-                        <NavItem view={AppView.LANDING} icon={<Icons.Layout />} label="Storefront" />
-                        <NavItem view={AppView.DIALER} icon={<Icons.Phone />} label="Power Dialer" />
-                        <NavItem view={AppView.REFERRALS} icon={<Icons.Users />} label="Referrals" />
-                        <NavItem view={AppView.LOYALTY} icon={<Icons.Star />} label="Loyalty" />
-                        <NavItem view={AppView.AFFILIATES} icon={<Icons.Users />} label="Partners" />
-                        <NavItem view={AppView.GIFT_CARDS} icon={<Icons.Gift />} label="Gift Cards" />
+                        <NavItem view={AppView.CAMPAIGNS} icon={<Icons.MegaphoneSolid />} label="Broadcasts" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.AUTOMATIONS} icon={<Icons.Workflow />} label="Automations" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.ADS} icon={<Icons.Target />} label="Ads Manager" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.SOCIAL} icon={<Icons.Share />} label="Social Planner" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.LANDING} icon={<Icons.Layout />} label="Storefront" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.DIALER} icon={<Icons.Phone />} label="Power Dialer" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.REFERRALS} icon={<Icons.Users />} label="Referrals" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.LOYALTY} icon={<Icons.Star />} label="Loyalty" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.AFFILIATES} icon={<Icons.Users />} label="Partners" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.GIFT_CARDS} icon={<Icons.Gift />} label="Gift Cards" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
                     </NavCategory>
 
                     <NavCategory title="Operations">
-                        <NavItem view={AppView.INVENTORY} icon={<Icons.Grid />} label="Inventory" />
-                        <NavItem view={AppView.LOGISTICS} icon={<Icons.Map />} label="Logistics" />
-                        <NavItem view={AppView.PROCUREMENT} icon={<Icons.Truck />} label="Procurement" />
-                        <NavItem view={AppView.RETURNS} icon={<Icons.RotateCcw />} label="Returns (RMA)" />
-                        <NavItem view={AppView.SCHEDULING} icon={<Icons.Clock />} label="Staff Roster" />
-                        <NavItem view={AppView.EVENTS} icon={<Icons.Ticket />} label="Events" />
-                        <NavItem view={AppView.SUPPORT} icon={<Icons.LifeBuoy />} label="Helpdesk" badge={tickets.filter(t => t.status === 'open').length} />
-                        <NavItem view={AppView.EXPENSES} icon={<Icons.FileText />} label="Expenses" />
+                        <NavItem view={AppView.INVENTORY} icon={<Icons.Grid />} label="Inventory" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.LOGISTICS} icon={<Icons.Map />} label="Logistics" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.PROCUREMENT} icon={<Icons.Truck />} label="Procurement" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.RETURNS} icon={<Icons.RotateCcw />} label="Returns (RMA)" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.SCHEDULING} icon={<Icons.Clock />} label="Staff Roster" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.EVENTS} icon={<Icons.Ticket />} label="Events" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.SUPPORT} icon={<Icons.LifeBuoy />} label="Helpdesk" badge={tickets.filter(t => t.status === 'open').length} currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.EXPENSES} icon={<Icons.FileText />} label="Expenses" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
                     </NavCategory>
 
                     <NavCategory title="Intelligence">
-                        <NavItem view={AppView.SIMULATOR} icon={<Icons.MessageSquare />} label="AI Simulator" />
-                        <NavItem view={AppView.EXPERIMENTS} icon={<Icons.Flask />} label="A/B Testing" />
-                        <NavItem view={AppView.REVIEWS} icon={<Icons.Star />} label="Reputation" />
-                        <NavItem view={AppView.SURVEYS} icon={<Icons.Activity />} label="Surveys (NPS)" />
-                        <NavItem view={AppView.TRAINING} icon={<Icons.GraduationCap />} label="AI Training" />
-                        <NavItem view={AppView.MEDIA} icon={<Icons.Image />} label="Media Studio" />
+                        <NavItem view={AppView.SIMULATOR} icon={<Icons.MessageSquare />} label="AI Simulator" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.EXPERIMENTS} icon={<Icons.Flask />} label="A/B Testing" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.REVIEWS} icon={<Icons.Star />} label="Reputation" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.SURVEYS} icon={<Icons.Activity />} label="Surveys (NPS)" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.TRAINING} icon={<Icons.GraduationCap />} label="AI Training" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.MEDIA} icon={<Icons.Image />} label="Media Studio" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
                     </NavCategory>
 
                     <NavCategory title="Configuration">
-                        <NavItem view={AppView.SETTINGS} icon={<Icons.Settings />} label="Settings" />
-                        <NavItem view={AppView.TEAM} icon={<Icons.User />} label="Team" />
-                        <NavItem view={AppView.CONNECT} icon={<Icons.Link />} label="Connect" />
-                        <NavItem view={AppView.FLOWS} icon={<Icons.Smartphone />} label="Flows" />
-                        <NavItem view={AppView.IVR} icon={<Icons.PhoneForwarded />} label="IVR Voice" />
-                        <NavItem view={AppView.TEMPLATES} icon={<Icons.File />} label="Templates" />
-                        <NavItem view={AppView.KNOWLEDGE} icon={<Icons.BookOpen />} label="Knowledge" />
-                        <NavItem view={AppView.LEGAL} icon={<Icons.Shield />} label="Legal" />
-                        <NavItem view={AppView.INTEGRATIONS} icon={<Icons.Puzzle />} label="Integrations" />
-                        <NavItem view={AppView.DEVELOPER} icon={<Icons.Code />} label="Developer" />
-                        <NavItem view={AppView.BILLING} icon={<Icons.CreditCard />} label="Billing" />
-                        {user?.role === 'owner' && <NavItem view={AppView.AGENCY} icon={<Icons.Briefcase />} label="Agency Admin" />}
+                        <NavItem view={AppView.SETTINGS} icon={<Icons.Settings />} label="Settings" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.TEAM} icon={<Icons.User />} label="Team" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.CONNECT} icon={<Icons.Link />} label="Connect" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.FLOWS} icon={<Icons.Smartphone />} label="Flows" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.IVR} icon={<Icons.PhoneForwarded />} label="IVR Voice" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.TEMPLATES} icon={<Icons.File />} label="Templates" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.KNOWLEDGE} icon={<Icons.BookOpen />} label="Knowledge" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.LEGAL} icon={<Icons.Shield />} label="Legal" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.INTEGRATIONS} icon={<Icons.Puzzle />} label="Integrations" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.DEVELOPER} icon={<Icons.Code />} label="Developer" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        <NavItem view={AppView.BILLING} icon={<Icons.CreditCard />} label="Billing" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />
+                        {user?.role === 'owner' && <NavItem view={AppView.AGENCY} icon={<Icons.Briefcase />} label="Agency Admin" currentView={currentView} onNavigate={onNavigate} onMobileClose={onMobileClose} />}
                     </NavCategory>
                 </div>
 
