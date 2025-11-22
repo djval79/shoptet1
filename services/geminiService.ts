@@ -1,5 +1,7 @@
 import { Message, BusinessProfile, CartItem, Customer, Order, Ticket } from "../types";
 
+import { toast } from "../components/ui/Toast";
+
 // Secure API proxy call - API key stays on server
 const callGeminiAPI = async (prompt: string, context?: string, model: string = 'gemini-2.0-flash-exp', apiKey?: string): Promise<any> => {
     try {
@@ -22,14 +24,28 @@ const callGeminiAPI = async (prompt: string, context?: string, model: string = '
         });
 
         if (!response.ok) {
+            // If 404 (likely local dev without proxy) or 500, throw specific error
+            if (response.status === 404) {
+                throw new Error('API_NOT_FOUND');
+            }
             const errorData = await response.json();
             console.error('API proxy error:', errorData);
             throw new Error(errorData.error || 'API request failed');
         }
 
         return await response.json();
-    } catch (error) {
+    } catch (error: any) {
         console.error('Gemini API call failed:', error);
+
+        // Graceful Fallback for Local Dev
+        if (error.message === 'API_NOT_FOUND' || error.message.includes('Failed to fetch')) {
+            toast.info("Using Mock AI (Local Dev Mode)");
+            return {
+                text: "This is a mock AI response because the backend API is not reachable locally. (Dev Mode)",
+                candidates: [{ content: { parts: [{ text: "This is a mock AI response because the backend API is not reachable locally. (Dev Mode)" }] } }]
+            };
+        }
+
         throw error;
     }
 };

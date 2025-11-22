@@ -348,13 +348,28 @@ const AppContent: React.FC = () => {
     );
 };
 
+import { ToastContainer, toast } from './components/ui/Toast';
+
 const App: React.FC = () => {
+    const [toasts, setToasts] = useState<any[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = toast.subscribe((t) => {
+            setToasts(prev => [...prev, t]);
+            setTimeout(() => {
+                setToasts(prev => prev.filter(x => x.id !== t.id));
+            }, 5000);
+        });
+        return unsubscribe;
+    }, []);
+
     return (
         <UserProvider>
             <BusinessProvider>
                 <DataProvider>
                     <AppContent />
                     <Analytics />
+                    <ToastContainer toasts={toasts} onRemove={(id) => setToasts(prev => prev.filter(t => t.id !== id))} />
                 </DataProvider>
             </BusinessProvider>
         </UserProvider>
