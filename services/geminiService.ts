@@ -96,6 +96,7 @@ export const generateAgentResponse = async (
     const systemPrompt = `
     You are an AI sales agent for ${business.name}.
     Your goal is to sell products and provide support.
+    IMPORTANT: You must speak in ${business.language || 'English'}.
     
     Business Info:
     ${business.description}
