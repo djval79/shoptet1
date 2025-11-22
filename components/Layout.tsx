@@ -62,7 +62,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
     }, []);
 
     return (
-        <div className="flex h-screen bg-[#0f172a] text-slate-100 font-sans overflow-hidden">
+        <div className="flex h-screen h-[100dvh] bg-[#0f172a] text-slate-100 font-sans overflow-hidden">
             <CommandPalette
                 isOpen={isCmdPaletteOpen}
                 onClose={() => setIsCmdPaletteOpen(false)}

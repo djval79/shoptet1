@@ -11,7 +11,7 @@ const TermsModal: React.FC<TermsModalProps> = ({ onAccept, onDecline }) => {
 
     return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
                     <div className="flex items-center gap-3">

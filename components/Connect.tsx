@@ -46,7 +46,7 @@ const Connect: React.FC<ConnectProps> = ({ business, onUpdate }) => {
     const [isSaved, setIsSaved] = useState(false);
 
     // Sanitize phone number (remove non-numeric characters)
-    const phone = business.twilioNumber.replace(/\D/g, '') || '14155238886';
+    const phone = business.twilioNumber?.replace(/\D/g, '') || '14155238886';
     const whatsappLink = `https://wa.me/${phone}`;
 
     // Dynamic Join Code
