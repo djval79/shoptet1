@@ -240,6 +240,7 @@ export interface User {
     name: string;
     plan: 'trial' | 'starter' | 'growth' | 'enterprise';
     role?: 'owner' | 'admin' | 'agent';
+    isSuperAdmin?: boolean; // New: Platform owner control
     avatar?: string;
     preferences?: {
         emailAlerts: boolean;
@@ -265,6 +266,11 @@ export interface SubscriptionPlan {
     price: number;
     currency: string;
     features: string[];
+    usageLimits?: {
+        aiTokens?: number; // Monthly limit
+        messages?: number; // Monthly limit
+        storage?: number; // MB
+    };
     isPopular?: boolean;
 }
 

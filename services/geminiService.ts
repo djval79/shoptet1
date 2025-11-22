@@ -63,6 +63,8 @@ const safeParseJSON = <T>(text: string, fallback: T): T => {
 
 // --- Core Agent Logic ---
 
+import { usageService } from "./usageService";
+
 export const generateAgentResponse = async (
     history: Message[],
     business: BusinessProfile,
@@ -82,6 +84,15 @@ export const generateAgentResponse = async (
     product?: any;
     flowId?: string;
 }> => {
+    // 1. Check Usage Limits
+    if (!usageService.checkLimit(business, 'aiTokens')) {
+        console.warn(`Business ${business.name} exceeded AI token limit.`);
+        return {
+            text: "System: Usage limit exceeded. Please upgrade your plan to continue using AI features.",
+            suggestedActions: ["Upgrade Plan", "Contact Support"]
+        };
+    }
+
     const systemPrompt = `
     You are an AI sales agent for ${business.name}.
     Your goal is to sell products and provide support.
@@ -120,6 +131,9 @@ export const generateAgentResponse = async (
             business.aiConfig?.model || 'gemini-2.0-flash-exp',
             business.aiConfig?.apiKey // Pass custom key if present
         );
+
+        // Increment Usage
+        usageService.incrementUsage(business.id, 'aiTokens', 100); // Mock token count
 
         // Extract text from Gemini response
         const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text ||
