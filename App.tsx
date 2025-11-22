@@ -233,7 +233,7 @@ const AppContent: React.FC = () => {
 
     const renderView = () => {
         switch (currentView) {
-            case AppView.DASHBOARD: return <Dashboard businesses={businesses} activeBusinessId={activeBusinessId} />;
+            case AppView.DASHBOARD: return <Dashboard businesses={businesses} activeBusinessId={activeBusinessId} onNavigate={setCurrentView} />;
             case AppView.INBOX: return <Inbox business={activeBusiness} customers={customers} currentUser={user} onUpdateCustomers={setCustomers} />;
             case AppView.CRM: return <CRM customers={customers} orders={orders} tickets={tickets} campaigns={campaigns} onUpdateCustomers={setCustomers} />;
             case AppView.ORDERS: return <Orders orders={orders} business={activeBusiness} onStatusUpdate={(id, s) => setOrders(prev => prev.map(o => o.id === id ? { ...o, status: s } : o))} />;
@@ -282,7 +282,7 @@ const AppContent: React.FC = () => {
             case AppView.CONTRACTS: return <Contracts business={activeBusiness} customers={customers} />;
             case AppView.GIFT_CARDS: return <GiftCards business={activeBusiness} />;
             case AppView.EXPENSES: return <Expenses business={activeBusiness} />;
-            default: return <Dashboard businesses={businesses} activeBusinessId={activeBusinessId} />;
+            default: return <Dashboard businesses={businesses} activeBusinessId={activeBusinessId} onNavigate={setCurrentView} />;
         }
     };
 

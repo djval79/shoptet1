@@ -23,12 +23,14 @@ export default async function handler(
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Check if API key is configured (either in env or header)
-    const apiKey = req.headers['x-gemini-api-key'] as string || process.env.GEMINI_API_KEY;
+    // BYOK: Require customer to provide their own API key
+    const apiKey = req.headers['x-gemini-api-key'] as string;
 
     if (!apiKey) {
-        console.error('GEMINI_API_KEY not configured');
-        return res.status(500).json({ error: 'API key not configured' });
+        return res.status(401).json({
+            error: 'Gemini API key required',
+            message: 'Please add your Gemini API key in Settings → AI Brain to use AI features.'
+        });
     }
 
     try {

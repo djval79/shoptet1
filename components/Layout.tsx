@@ -22,6 +22,32 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
 
     const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLandscape, setIsLandscape] = useState(false);
+
+    // Detect orientation changes
+    useEffect(() => {
+        const checkOrientation = () => {
+            const isLandscapeMode = window.innerWidth > window.innerHeight && window.innerWidth < 1024;
+            setIsLandscape(isLandscapeMode);
+
+            // Auto-close mobile menu in landscape mode
+            if (isLandscapeMode) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+
+        // Check on mount
+        checkOrientation();
+
+        // Listen for orientation changes
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        return () => {
+            window.removeEventListener('resize', checkOrientation);
+            window.removeEventListener('orientationchange', checkOrientation);
+        };
+    }, []);
 
     // Command Palette Shortcut
     useEffect(() => {
@@ -55,10 +81,10 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 bg-slate-900 relative">
-                {/* Mobile Header */}
-                <div className="lg:hidden bg-[#0b1120] border-b border-slate-800 p-4 flex items-center justify-between">
+                {/* Mobile Header - Hidden in landscape */}
+                <div className={`lg:hidden bg-[#0b1120] border-b border-slate-800 p-4 flex items-center justify-between transition-all ${isLandscape ? 'hidden' : ''}`}>
                     <div className="flex items-center space-x-3">
-                        <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-400"><Icons.Menu /></button>
+                        <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-400 touch-manipulation"><Icons.Menu /></button>
                         <span className="font-bold text-white">{activeBusiness.name}</span>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -70,6 +96,17 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
                         />
                     </div>
                 </div>
+
+                {/* Floating Menu Button for Landscape Mode */}
+                {isLandscape && (
+                    <button
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="fixed top-4 left-4 z-30 bg-slate-800 border border-slate-700 text-slate-400 hover:text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all touch-manipulation"
+                        aria-label="Open menu"
+                    >
+                        <Icons.Menu className="w-5 h-5" />
+                    </button>
+                )}
 
                 {/* Desktop Top Bar */}
                 <div className="hidden lg:flex h-16 border-b border-slate-800 bg-[#0f172a] items-center justify-between px-6">
@@ -114,7 +151,7 @@ const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigate, onOp
 
                 {/* View Content */}
                 <div className="flex-1 overflow-hidden relative">
-                    <div className="absolute inset-0 overflow-y-auto custom-scrollbar p-4 lg:p-8">
+                    <div className={`absolute inset-0 overflow-y-auto custom-scrollbar ${isLandscape ? 'p-3 lg:p-8' : 'p-4 lg:p-8'}`}>
                         {children}
                     </div>
                 </div>

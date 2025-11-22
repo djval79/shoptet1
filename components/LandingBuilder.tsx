@@ -29,43 +29,61 @@ const LandingBuilder: React.FC<LandingBuilderProps> = ({ business, onUpdateBusin
     return (
         <div className="h-full flex flex-col animate-in fade-in duration-500">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
                     <h2 className="text-2xl font-bold text-white">Storefront Builder</h2>
                     <p className="text-slate-400 text-sm">Design your WhatsApp catalog and landing page.</p>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 flex-wrap gap-2">
                     <div className="bg-[#1e293b] p-1 rounded-lg border border-slate-700 flex">
                         <button
-                            onClick={() => setPreviewMode('desktop')}
-                            className={`p-2 rounded ${previewMode === 'desktop' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setPreviewMode('desktop');
+                            }}
+                            className={`p-3 rounded transition-all touch-manipulation ${previewMode === 'desktop' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                            aria-label="Desktop view"
                         >
-                            <Icons.Monitor className="w-4 h-4" />
+                            <Icons.Monitor className="w-5 h-5" />
                         </button>
                         <button
-                            onClick={() => setPreviewMode('mobile')}
-                            className={`p-2 rounded ${previewMode === 'mobile' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setPreviewMode('mobile');
+                            }}
+                            className={`p-3 rounded transition-all touch-manipulation ${previewMode === 'mobile' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+                            aria-label="Mobile view"
                         >
-                            <Icons.Smartphone className="w-4 h-4" />
+                            <Icons.Smartphone className="w-5 h-5" />
                         </button>
                     </div>
                     <button
+                        type="button"
                         onClick={handleGenerate}
                         disabled={isGenerating}
-                        className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-purple-900/20 transition-all flex items-center space-x-2"
+                        className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-purple-900/20 transition-all flex items-center space-x-2 touch-manipulation"
                     >
                         {isGenerating ? <Icons.Loader className="animate-spin w-4 h-4" /> : <Icons.Wand className="w-4 h-4" />}
-                        <span>AI Redesign</span>
+                        <span className="hidden sm:inline">AI Redesign</span>
+                        <span className="sm:hidden">AI</span>
                     </button>
-                    <button className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-green-900/20 transition-all">
-                        Publish Changes
+                    <button
+                        type="button"
+                        className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-green-900/20 transition-all touch-manipulation"
+                    >
+                        <span className="hidden sm:inline">Publish Changes</span>
+                        <span className="sm:hidden">Publish</span>
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 flex gap-6 overflow-hidden">
+            <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
                 {/* Left: Editor Panel */}
-                <div className="w-80 bg-[#1e293b] rounded-xl border border-slate-700/50 flex flex-col overflow-hidden shadow-lg">
+                <div className="w-full lg:w-80 bg-[#1e293b] rounded-xl border border-slate-700/50 flex flex-col overflow-hidden shadow-lg max-h-[400px] lg:max-h-none">
                     <div className="flex border-b border-slate-700">
                         <button
                             onClick={() => setActiveTab('content')}

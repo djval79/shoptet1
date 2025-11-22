@@ -1,5 +1,5 @@
 import React from 'react';
-import { BusinessProfile } from '../types';
+import { BusinessProfile, AppView } from '../types';
 import { useData } from '../contexts/DataContext';
 import { Icons } from '../constants';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
@@ -7,9 +7,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 interface DashboardProps {
   businesses: BusinessProfile[];
   activeBusinessId: string;
+  onNavigate?: (view: AppView) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) => {
+const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId, onNavigate }) => {
   const { orders, customers } = useData();
   const activeBusiness = businesses.find(b => b.id === activeBusinessId);
 
@@ -55,15 +56,15 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 px-4 md:px-0">
       {/* Welcome / Progress Banner */}
       {progress < 100 && (
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700 shadow-lg relative overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 md:p-6 border border-slate-700 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-          <div className="flex justify-between items-center relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-white mb-2">Welcome back, {activeBusiness.name} 👋</h2>
-              <p className="text-slate-400">Complete your setup to unlock full AI potential.</p>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-2">Welcome back, {activeBusiness.name} 👋</h2>
+              <p className="text-slate-400 text-sm">Complete your setup to unlock full AI potential.</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
@@ -79,13 +80,13 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
       )}
 
       {/* Top Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         {/* Revenue Card */}
-        <div className="bg-[#1e293b] rounded-xl p-6 border border-slate-700/50 shadow-lg hover:border-blue-500/30 transition-all group">
+        <div className="bg-[#1e293b] rounded-xl p-5 md:p-6 border border-slate-700/50 shadow-lg hover:border-blue-500/30 transition-all group">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-slate-400 text-sm font-medium">Total Revenue</p>
-              <h3 className="text-3xl font-bold text-white mt-1">${totalRevenue.toLocaleString()}</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-white mt-1">${totalRevenue.toLocaleString()}</h3>
             </div>
             <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:scale-110 transition-transform">
               <Icons.DollarSign />
@@ -100,11 +101,11 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
         </div>
 
         {/* Active Conversations Card */}
-        <div className="bg-[#1e293b] rounded-xl p-6 border border-slate-700/50 shadow-lg hover:border-purple-500/30 transition-all group">
+        <div className="bg-[#1e293b] rounded-xl p-5 md:p-6 border border-slate-700/50 shadow-lg hover:border-purple-500/30 transition-all group">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-slate-400 text-sm font-medium">Active Conversations</p>
-              <h3 className="text-3xl font-bold text-white mt-1">{activeConversations}</h3>
+              <h3 className="text-2xl md:text-3xl font-bold text-white mt-1">{activeConversations}</h3>
             </div>
             <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400 group-hover:scale-110 transition-transform">
               <Icons.MessageSquare />
@@ -119,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
         </div>
 
         {/* Sales Agent Strategy Card */}
-        <div className="bg-[#1e293b] rounded-xl p-6 border border-slate-700/50 shadow-lg hover:border-green-500/30 transition-all group">
+        <div className="bg-[#1e293b] rounded-xl p-5 md:p-6 border border-slate-700/50 shadow-lg hover:border-green-500/30 transition-all group sm:col-span-2 lg:col-span-1">
           <div className="flex justify-between items-start mb-4">
             <div>
               <p className="text-slate-400 text-sm font-medium">Sales Agent Strategy</p>
@@ -137,11 +138,11 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Revenue Chart */}
-        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-6">Revenue Overview</h3>
-          <div className="h-64">
+        <div className="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 shadow-lg">
+          <h3 className="text-base md:text-lg font-semibold text-white mb-4 md:mb-6">Revenue Overview</h3>
+          <div className="h-48 md:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueData}>
                 <defs>
@@ -165,9 +166,9 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
         </div>
 
         {/* Conversation Chart */}
-        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-6">Conversation Volume</h3>
-          <div className="h-64">
+        <div className="bg-slate-800 p-4 md:p-6 rounded-2xl border border-slate-700 shadow-lg">
+          <h3 className="text-base md:text-lg font-semibold text-white mb-4 md:mb-6">Conversation Volume</h3>
+          <div className="h-48 md:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={conversationData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
@@ -185,30 +186,42 @@ const Dashboard: React.FC<DashboardProps> = ({ businesses, activeBusinessId }) =
       </div>
 
       {/* Quick Actions Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button className="p-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-colors flex flex-col items-center justify-center group">
-          <div className="w-10 h-10 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 mb-3 group-hover:scale-110 transition-transform">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <button
+          onClick={() => onNavigate?.(AppView.CAMPAIGNS)}
+          className="p-4 md:p-5 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 active:scale-95 transition-all flex flex-col items-center justify-center group touch-manipulation"
+        >
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 mb-3 group-hover:scale-110 transition-transform">
             <Icons.Plus />
           </div>
-          <span className="text-sm font-medium text-slate-300">New Campaign</span>
+          <span className="text-xs md:text-sm font-medium text-slate-300">New Campaign</span>
         </button>
-        <button className="p-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-colors flex flex-col items-center justify-center group">
-          <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-400 mb-3 group-hover:scale-110 transition-transform">
+        <button
+          onClick={() => onNavigate?.(AppView.CRM)}
+          className="p-4 md:p-5 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 active:scale-95 transition-all flex flex-col items-center justify-center group touch-manipulation"
+        >
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-500/10 rounded-full flex items-center justify-center text-purple-400 mb-3 group-hover:scale-110 transition-transform">
             <Icons.Users />
           </div>
-          <span className="text-sm font-medium text-slate-300">Add Contact</span>
+          <span className="text-xs md:text-sm font-medium text-slate-300">Add Contact</span>
         </button>
-        <button className="p-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-colors flex flex-col items-center justify-center group">
-          <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center text-green-400 mb-3 group-hover:scale-110 transition-transform">
+        <button
+          onClick={() => onNavigate?.(AppView.INVOICES)}
+          className="p-4 md:p-5 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 active:scale-95 transition-all flex flex-col items-center justify-center group touch-manipulation"
+        >
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-green-500/10 rounded-full flex items-center justify-center text-green-400 mb-3 group-hover:scale-110 transition-transform">
             <Icons.CreditCard />
           </div>
-          <span className="text-sm font-medium text-slate-300">Create Invoice</span>
+          <span className="text-xs md:text-sm font-medium text-slate-300">Create Invoice</span>
         </button>
-        <button className="p-4 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 transition-colors flex flex-col items-center justify-center group">
-          <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-400 mb-3 group-hover:scale-110 transition-transform">
+        <button
+          onClick={() => onNavigate?.(AppView.SETTINGS)}
+          className="p-4 md:p-5 bg-slate-800 border border-slate-700 rounded-xl hover:bg-slate-700 active:scale-95 transition-all flex flex-col items-center justify-center group touch-manipulation"
+        >
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-400 mb-3 group-hover:scale-110 transition-transform">
             <Icons.Settings />
           </div>
-          <span className="text-sm font-medium text-slate-300">Settings</span>
+          <span className="text-xs md:text-sm font-medium text-slate-300">Settings</span>
         </button>
       </div>
     </div>

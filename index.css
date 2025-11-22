@@ -339,6 +339,38 @@
     .status-pulse {
         animation: pulse-glow 2s ease-in-out infinite;
     }
+
+    /* Mobile-Specific Utilities */
+    .touch-manipulation {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Improved tap targets for mobile */
+    @media (max-width: 768px) {
+
+        button,
+        a,
+        [role="button"] {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    }
+
+    /* Smooth scrolling for mobile */
+    @media (max-width: 768px) {
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
+    /* Better focus states for mobile */
+    @media (max-width: 768px) {
+        *:focus {
+            outline: 2px solid rgba(59, 130, 246, 0.5);
+            outline-offset: 2px;
+        }
+    }
 }
 
 /* ========================================
@@ -395,4 +427,54 @@
 
 .stat-number {
     animation: counter-grow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ========================================
+   LANDSCAPE ORIENTATION STYLES
+   ======================================== */
+
+/* Optimize for mobile landscape mode */
+@media (max-width: 1024px) and (orientation: landscape) {
+
+    /* Reduce vertical padding in landscape */
+    .space-y-6,
+    .space-y-8 {
+        gap: 0.75rem !important;
+    }
+
+    /* Smaller chart heights in landscape */
+    .h-48 {
+        height: 10rem !important;
+    }
+
+    /* Compact cards in landscape */
+    .rounded-xl,
+    .rounded-2xl {
+        border-radius: 0.5rem !important;
+    }
+
+    /* Reduce padding in landscape */
+    .p-4,
+    .p-5,
+    .p-6 {
+        padding: 0.75rem !important;
+    }
+
+    /* Use full viewport height */
+    .h-screen {
+        height: 100vh;
+        height: 100dvh;
+        /* Dynamic viewport height for mobile browsers */
+    }
+
+    /* Smaller text in landscape for better fit */
+    .text-2xl {
+        font-size: 1.25rem !important;
+        line-height: 1.75rem !important;
+    }
+
+    .text-3xl {
+        font-size: 1.5rem !important;
+        line-height: 2rem !important;
+    }
 }

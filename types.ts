@@ -335,6 +335,39 @@ export interface AIConfig {
     apiKey?: string; // New: BYOK Support
 }
 
+export interface PaymentGatewayConfig {
+    paystack?: {
+        enabled: boolean;
+        publicKey: string;
+        secretKey: string;
+    };
+    flutterwave?: {
+        enabled: boolean;
+        publicKey: string;
+        secretKey: string;
+    };
+    paynow?: {
+        enabled: boolean;
+        integrationId: string;
+        integrationKey: string;
+    };
+    ecocash?: {
+        enabled: boolean;
+        merchantCode: string;
+        merchantKey: string;
+    };
+}
+
+export interface FacebookAdConfig {
+    connected: boolean;
+    adAccountId?: string;
+    adAccountName?: string;
+    accessToken?: string; // Encrypted in storage
+    tokenExpiry?: number;
+    pageId?: string;
+    businessId?: string;
+}
+
 export interface BusinessProfile {
     id: string;
     ownerId?: string; // Link to User
@@ -367,6 +400,12 @@ export interface BusinessProfile {
 
     // AI Brain Configuration
     aiConfig?: AIConfig;
+
+    // Facebook Ads Integration
+    facebookAdConfig?: FacebookAdConfig;
+
+    // Payment Gateways (African Markets)
+    paymentGateways?: PaymentGatewayConfig;
 
     // Stats
     revenue: number;

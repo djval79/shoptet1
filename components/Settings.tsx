@@ -9,7 +9,7 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ business, onUpdate }) => {
-    const [activeTab, setActiveTab] = useState<'general' | 'ai_brain' | 'integrations' | 'backup'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'ai_brain' | 'integrations' | 'payments' | 'backup'>('general');
     const [formData, setFormData] = useState({ ...business });
     const [isSaved, setIsSaved] = useState(false);
     const [newIceBreaker, setNewIceBreaker] = useState('');
@@ -117,11 +117,12 @@ const Settings: React.FC<SettingsProps> = ({ business, onUpdate }) => {
                     <p className="text-slate-400">Manage your store identity, AI policies, and integrations.</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
-                        <button onClick={() => setActiveTab('general')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'general' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>General</button>
-                        <button onClick={() => setActiveTab('ai_brain')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'ai_brain' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'}`}>AI Brain</button>
-                        <button onClick={() => setActiveTab('integrations')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'integrations' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>Integrations</button>
-                        <button onClick={() => setActiveTab('backup')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === 'backup' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>Data</button>
+                    <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700 overflow-x-auto">
+                        <button onClick={() => setActiveTab('general')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'general' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>General</button>
+                        <button onClick={() => setActiveTab('ai_brain')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'ai_brain' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'}`}>AI Brain</button>
+                        <button onClick={() => setActiveTab('integrations')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'integrations' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>Integrations</button>
+                        <button onClick={() => setActiveTab('payments')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'payments' ? 'bg-green-600 text-white' : 'text-slate-400 hover:text-white'}`}>Payments</button>
+                        <button onClick={() => setActiveTab('backup')} className={`px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'backup' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>Data</button>
                     </div>
                     <button
                         onClick={handleSave}
@@ -472,40 +473,453 @@ const Settings: React.FC<SettingsProps> = ({ business, onUpdate }) => {
                 )}
 
                 {activeTab === 'integrations' && (
-                    <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                            <Icons.Settings /> <span className="ml-2">Twilio API Credentials</span>
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-slate-400 text-sm mb-2">Account SID</label>
-                                <input
-                                    type="text"
-                                    value={formData.twilioAccountSid || ''}
-                                    onChange={e => handleChange('twilioAccountSid', e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
-                                />
+                    <div className="space-y-6">
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                                <Icons.Settings /> <span className="ml-2">Twilio API Credentials</span>
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-slate-400 text-sm mb-2">Account SID</label>
+                                    <input
+                                        type="text"
+                                        value={formData.twilioAccountSid || ''}
+                                        onChange={e => handleChange('twilioAccountSid', e.target.value)}
+                                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-slate-400 text-sm mb-2">Auth Token</label>
+                                    <input
+                                        type="password"
+                                        value={formData.twilioAuthToken || ''}
+                                        onChange={e => handleChange('twilioAuthToken', e.target.value)}
+                                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-slate-400 text-sm mb-2">Messaging Service SID</label>
+                                    <input
+                                        type="text"
+                                        value={formData.twilioMessagingServiceSid || ''}
+                                        onChange={e => handleChange('twilioMessagingServiceSid', e.target.value)}
+                                        placeholder="MG..."
+                                        className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">Optional: Used for pooling multiple senders.</p>
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-slate-400 text-sm mb-2">Auth Token</label>
-                                <input
-                                    type="password"
-                                    value={formData.twilioAuthToken || ''}
-                                    onChange={e => handleChange('twilioAuthToken', e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
-                                />
+                        </div>
+
+                        {/* Facebook Ads Integration */}
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                                <span className="ml-2">Facebook Ads</span>
+                            </h3>
+
+                            {!formData.facebookAdConfig?.connected ? (
+                                <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex-1">
+                                            <h4 className="text-white font-bold mb-2">Connect Your Facebook Ad Account</h4>
+                                            <p className="text-sm text-slate-400 mb-4">
+                                                Publish Click-to-WhatsApp ads directly from Chat2Close to your Facebook/Instagram account.
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    const loginUrl = `/api/auth/facebook/login?businessId=${business.id}`;
+                                                    const popup = window.open(loginUrl, 'facebook-auth', 'width=600,height=700');
+
+                                                    // Listen for OAuth callback
+                                                    window.addEventListener('message', (event) => {
+                                                        if (event.data.type === 'FACEBOOK_AUTH_SUCCESS') {
+                                                            const { accessToken, tokenExpiry, adAccounts } = event.data.data;
+
+                                                            // Update business profile with Facebook config
+                                                            const updatedBusiness = {
+                                                                ...formData,
+                                                                facebookAdConfig: {
+                                                                    connected: true,
+                                                                    accessToken,
+                                                                    tokenExpiry,
+                                                                    adAccountId: adAccounts[0]?.id,
+                                                                    adAccountName: adAccounts[0]?.name,
+                                                                }
+                                                            };
+
+                                                            setFormData(updatedBusiness);
+                                                            onUpdate(updatedBusiness);
+                                                            popup?.close();
+                                                        }
+                                                    });
+                                                }}
+                                                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                                                Connect Facebook
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-green-900/20 border border-green-700 rounded-xl p-6">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-green-400 text-xl">✓</span>
+                                                <h4 className="text-white font-bold">Connected</h4>
+                                            </div>
+                                            <p className="text-sm text-slate-400 mb-1">
+                                                <strong>Ad Account:</strong> {formData.facebookAdConfig.adAccountName || formData.facebookAdConfig.adAccountId}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                Token expires: {new Date(formData.facebookAdConfig.tokenExpiry || 0).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                if (confirm('Are you sure you want to disconnect Facebook Ads?')) {
+                                                    const updatedBusiness = {
+                                                        ...formData,
+                                                        facebookAdConfig: { connected: false }
+                                                    };
+                                                    setFormData(updatedBusiness);
+                                                    onUpdate(updatedBusiness);
+                                                }
+                                            }}
+                                            className="text-red-400 hover:text-red-300 text-sm font-medium"
+                                        >
+                                            Disconnect
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'payments' && (
+                    <div className="space-y-6">
+                        {/* Info Banner */}
+                        <div className="bg-blue-900/20 border border-blue-700 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <span className="text-2xl">💳</span>
+                                <div>
+                                    <h4 className="text-white font-bold mb-1">African Payment Gateways</h4>
+                                    <p className="text-sm text-slate-300">
+                                        Configure payment gateways for your Nigerian and Zimbabwean customers. Enable the gateways you want to use and add your API credentials.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-slate-400 text-sm mb-2">Messaging Service SID</label>
-                                <input
-                                    type="text"
-                                    value={formData.twilioMessagingServiceSid || ''}
-                                    onChange={e => handleChange('twilioMessagingServiceSid', e.target.value)}
-                                    placeholder="MG..."
-                                    className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white outline-none focus:border-blue-500 font-mono"
-                                />
-                                <p className="text-xs text-slate-500 mt-1">Optional: Used for pooling multiple senders.</p>
+                        </div>
+
+                        {/* Paystack - Nigeria */}
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                        <span className="text-2xl">🇳🇬</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">Paystack</h3>
+                                        <p className="text-xs text-slate-400">Nigeria's #1 payment gateway • Cards, Bank Transfer, USSD</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.paymentGateways?.paystack?.enabled || false}
+                                        onChange={e => setFormData(prev => ({
+                                            ...prev,
+                                            paymentGateways: {
+                                                ...prev.paymentGateways,
+                                                paystack: {
+                                                    ...prev.paymentGateways?.paystack,
+                                                    enabled: e.target.checked,
+                                                    publicKey: prev.paymentGateways?.paystack?.publicKey || '',
+                                                    secretKey: prev.paymentGateways?.paystack?.secretKey || '',
+                                                }
+                                            }
+                                        }))}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
                             </div>
+
+                            {formData.paymentGateways?.paystack?.enabled && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700">
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Public Key</label>
+                                        <input
+                                            type="text"
+                                            value={formData.paymentGateways?.paystack?.publicKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    paystack: { ...prev.paymentGateways?.paystack!, publicKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="pk_test_..."
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-blue-500 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Secret Key</label>
+                                        <input
+                                            type="password"
+                                            value={formData.paymentGateways?.paystack?.secretKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    paystack: { ...prev.paymentGateways?.paystack!, secretKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="sk_test_..."
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-blue-500 font-mono"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs text-slate-500">
+                                            Get your API keys from <a href="https://dashboard.paystack.com/#/settings/developers" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Paystack Dashboard</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Flutterwave - Pan-African */}
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                                        <span className="text-2xl">🌍</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">Flutterwave</h3>
+                                        <p className="text-xs text-slate-400">Pan-African • 150+ currencies • International payments</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.paymentGateways?.flutterwave?.enabled || false}
+                                        onChange={e => setFormData(prev => ({
+                                            ...prev,
+                                            paymentGateways: {
+                                                ...prev.paymentGateways,
+                                                flutterwave: {
+                                                    ...prev.paymentGateways?.flutterwave,
+                                                    enabled: e.target.checked,
+                                                    publicKey: prev.paymentGateways?.flutterwave?.publicKey || '',
+                                                    secretKey: prev.paymentGateways?.flutterwave?.secretKey || '',
+                                                }
+                                            }
+                                        }))}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
+
+                            {formData.paymentGateways?.flutterwave?.enabled && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700">
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Public Key</label>
+                                        <input
+                                            type="text"
+                                            value={formData.paymentGateways?.flutterwave?.publicKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    flutterwave: { ...prev.paymentGateways?.flutterwave!, publicKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="FLWPUBK_TEST-..."
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-orange-500 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Secret Key</label>
+                                        <input
+                                            type="password"
+                                            value={formData.paymentGateways?.flutterwave?.secretKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    flutterwave: { ...prev.paymentGateways?.flutterwave!, secretKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="FLWSECK_TEST-..."
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-orange-500 font-mono"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs text-slate-500">
+                                            Get your API keys from <a href="https://dashboard.flutterwave.com/settings/apis" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">Flutterwave Dashboard</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Paynow - Zimbabwe */}
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                        <span className="text-2xl">🇿🇼</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">Paynow</h3>
+                                        <p className="text-xs text-slate-400">Zimbabwe's leading gateway • EcoCash, Visa, Mastercard</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.paymentGateways?.paynow?.enabled || false}
+                                        onChange={e => setFormData(prev => ({
+                                            ...prev,
+                                            paymentGateways: {
+                                                ...prev.paymentGateways,
+                                                paynow: {
+                                                    ...prev.paymentGateways?.paynow,
+                                                    enabled: e.target.checked,
+                                                    integrationId: prev.paymentGateways?.paynow?.integrationId || '',
+                                                    integrationKey: prev.paymentGateways?.paynow?.integrationKey || '',
+                                                }
+                                            }
+                                        }))}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
+
+                            {formData.paymentGateways?.paynow?.enabled && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700">
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Integration ID</label>
+                                        <input
+                                            type="text"
+                                            value={formData.paymentGateways?.paynow?.integrationId || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    paynow: { ...prev.paymentGateways?.paynow!, integrationId: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="12345"
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-green-500 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Integration Key</label>
+                                        <input
+                                            type="password"
+                                            value={formData.paymentGateways?.paynow?.integrationKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    paynow: { ...prev.paymentGateways?.paynow!, integrationKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-green-500 font-mono"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs text-slate-500">
+                                            Get your credentials from <a href="https://www.paynow.co.zw/" target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">Paynow Merchant Portal</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* EcoCash - Zimbabwe */}
+                        <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-12 h-12 bg-red-500/10 rounded-lg flex items-center justify-center">
+                                        <span className="text-2xl">📱</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-white">EcoCash</h3>
+                                        <p className="text-xs text-slate-400">Zimbabwe's #1 mobile money • 70%+ market share</p>
+                                    </div>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.paymentGateways?.ecocash?.enabled || false}
+                                        onChange={e => setFormData(prev => ({
+                                            ...prev,
+                                            paymentGateways: {
+                                                ...prev.paymentGateways,
+                                                ecocash: {
+                                                    ...prev.paymentGateways?.ecocash,
+                                                    enabled: e.target.checked,
+                                                    merchantCode: prev.paymentGateways?.ecocash?.merchantCode || '',
+                                                    merchantKey: prev.paymentGateways?.ecocash?.merchantKey || '',
+                                                }
+                                            }
+                                        }))}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
+
+                            {formData.paymentGateways?.ecocash?.enabled && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-700">
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Merchant Code</label>
+                                        <input
+                                            type="text"
+                                            value={formData.paymentGateways?.ecocash?.merchantCode || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    ecocash: { ...prev.paymentGateways?.ecocash!, merchantCode: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="MERCHANT123"
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-red-500 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-slate-400 text-sm mb-2">Merchant Key</label>
+                                        <input
+                                            type="password"
+                                            value={formData.paymentGateways?.ecocash?.merchantKey || ''}
+                                            onChange={e => setFormData(prev => ({
+                                                ...prev,
+                                                paymentGateways: {
+                                                    ...prev.paymentGateways,
+                                                    ecocash: { ...prev.paymentGateways?.ecocash!, merchantKey: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="xxxxxxxxxxxxxxxx"
+                                            className="w-full bg-slate-900 border border-slate-600 rounded p-3 text-white text-sm outline-none focus:border-red-500 font-mono"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs text-slate-500">
+                                            Apply for merchant account at <a href="https://www.ecocash.co.zw/" target="_blank" rel="noopener noreferrer" className="text-red-400 hover:underline">EcoCash Business</a>
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
